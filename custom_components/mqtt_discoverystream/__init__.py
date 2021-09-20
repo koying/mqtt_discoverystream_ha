@@ -110,6 +110,8 @@ async def async_setup(hass, config):
                     }
                     if ATTR_BRIGHTNESS in payload_json:
                         service_payload[ATTR_BRIGHTNESS] = payload_json[ATTR_BRIGHTNESS]
+                    if ATTR_COLOR_TEMP in payload_json:
+                        service_payload[ATTR_COLOR_TEMP] = payload_json[ATTR_COLOR_TEMP]
                     if ATTR_COLOR in payload_json:
                         if ATTR_H in payload_json[ATTR_COLOR]:
                             service_payload[ATTR_HS_COLOR] = [ payload_json[ATTR_COLOR][ATTR_H], payload_json[ATTR_COLOR][ATTR_S] ]
@@ -129,12 +131,9 @@ async def async_setup(hass, config):
         if new_state is None:
             return
 
-        _LOGGER.info(f'Checking {entity_id}')
-
         if not publish_filter(entity_id):
             return
 
-        _LOGGER.info(f'Handling {entity_id}')
         mybase = f"{base_topic}{entity_id.replace('.', '/')}/"
 
         if publish_timestamps:
