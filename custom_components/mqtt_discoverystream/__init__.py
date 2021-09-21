@@ -20,6 +20,7 @@ from homeassistant.components.light import (
     ATTR_RGB_COLOR,
     ATTR_XY_COLOR,
     ATTR_HS_COLOR,
+    ATTR_TRANSITION,
     SUPPORT_BRIGHTNESS,
     SUPPORT_COLOR,
     SUPPORT_COLOR_TEMP,
@@ -104,10 +105,13 @@ async def async_setup(hass, config):
                 _LOGGER.error(f'Invalid domain for "set_light" - payload: {msg.payload} for {entity}')
             else:
                 payload_json = json.loads(msg.payload)
+                service_payload =  {
+                    ATTR_ENTITY_ID: f"{domain}.{entity}",
+                }
+                if ATTR_TRANSITION in payload_json:
+                    service_payload[ATTR_TRANSITION] = payload_json[ATTR_TRANSITION]
+
                 if payload_json["state"] == "ON":  
-                    service_payload =  {
-                        ATTR_ENTITY_ID: f"{domain}.{entity}",
-                    }
                     if ATTR_BRIGHTNESS in payload_json:
                         service_payload[ATTR_BRIGHTNESS] = payload_json[ATTR_BRIGHTNESS]
                     if ATTR_COLOR_TEMP in payload_json:
@@ -121,7 +125,7 @@ async def async_setup(hass, config):
                             service_payload[ATTR_RGB_COLOR] = [ payload_json[ATTR_COLOR][ATTR_R], payload_json[ATTR_COLOR][ATTR_G], payload_json[ATTR_COLOR][ATTR_B] ]
                     await hass.services.async_call(domain, SERVICE_TURN_ON, service_payload)
                 elif payload_json["state"] == "OFF":
-                    await hass.services.async_call(domain, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
+                    await hass.services.async_call(domain, SERVICE_TURN_OFF, service_payload)
                 else:
                     _LOGGER.error(f'Invalid state for "set_light" - payload: {msg.payload} for {entity}')
 
