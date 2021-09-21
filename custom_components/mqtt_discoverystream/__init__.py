@@ -177,16 +177,21 @@ async def async_setup(hass, config):
             publish_config = False
             if ent_domain == "sensor" and (has_includes or "device_class" in new_state.attributes):
                 publish_config = True
+
             elif ent_domain == "binary_sensor" and (has_includes or "device_class" in new_state.attributes):
                 config["pl_off"] = STATE_OFF
                 config["pl_on"] = STATE_ON
                 publish_config = True
+
             elif ent_domain == "switch":
                 config["pl_off"] = STATE_OFF
                 config["pl_on"] = STATE_ON
                 config["cmd_t"] = f"{mybase}set"
-
                 publish_config = True
+
+            elif ent_domain == "device_tracker":
+                publish_config = True
+
             elif ent_domain == "light":
                 config = {
                     "uniq_id": f"mqtt_{entity_id}",
