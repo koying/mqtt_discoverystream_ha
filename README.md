@@ -5,6 +5,20 @@ Besides the functionalities of the hereabove, it also allows to publish and hand
 
 ## Changelog
 
+### 0.4
+
+- Add device_tracker
+- Add light transitions
+- Initial HACS release
+
+### 0.3
+
+- Manage color temperature
+
+### 0.3
+
+- Fix binary_sensors
+
 ### 0.1
 
 - Initial release:
