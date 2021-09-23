@@ -215,25 +215,24 @@ async def async_setup(hass, config):
 
             if publish_config:
                 for entry in ent_reg.entities.values():
-                    if entry.entity_id == entity_id:
-                        config_entry_id = entry.config_entry_id
-
-                        devices = [ device for device in dev_reg.devices.values() if config_entry_id in device.config_entries ]
-                        if devices and devices[0]:
-                            device = devices[0]
-                            config["dev"] = {}
-                            if device.manufacturer:
-                                config["dev"]["mf"] = device.manufacturer
-                            if device.model:
-                                config["dev"]["mdl"] = device.model
-                            if device.name:
-                                config["dev"]["name"] = device.name
-                            if device.sw_version:
-                                config["dev"]["sw"] = device.sw_version
-                            if device.identifiers:
-                                config["dev"]["ids"] = [ id[1] for id in device.identifiers ]
-                            if device.connections:
-                                config["dev"]["cns"] = [ id[1] for id in device.connections ]
+                    if entry.entity_id != entity_id:
+                        continue
+                    for device in dev_reg.devices.values():
+                        if device.id != entry.device_id:
+                            continue
+                        config["dev"] = {}
+                        if device.manufacturer:
+                            config["dev"]["mf"] = device.manufacturer
+                        if device.model:
+                            config["dev"]["mdl"] = device.model
+                        if device.name:
+                            config["dev"]["name"] = device.name
+                        if device.sw_version:
+                            config["dev"]["sw"] = device.sw_version
+                        if device.identifiers:
+                            config["dev"]["ids"] = [ id[1] for id in device.identifiers ]
+                        if device.connections:
+                            config["dev"]["cns"] = device.connections
 
                 encoded = json.dumps(config, cls=JSONEncoder)
                 hass.components.mqtt.async_publish(f"{mybase}config", encoded, 1, True)
@@ -274,3 +273,4 @@ async def async_setup(hass, config):
 
     async_track_state_change(hass, MATCH_ALL, _state_publisher)
     return True
+
