@@ -27,6 +27,7 @@ from homeassistant.components.light import (
     SUPPORT_EFFECT,
 )
 from homeassistant.core import callback
+from homeassistant.helpers import device_registry, entity_registry
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import get_supported_features
 from homeassistant.helpers.entityfilter import (
@@ -83,6 +84,8 @@ async def async_setup(hass, config):
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN][base_topic] = {}
     hass.data[DOMAIN][base_topic]["conf_published"] = []
+    dev_reg = await hass.helpers.device_registry.async_get_registry()
+    ent_reg = await hass.helpers.entity_registry.async_get_registry()
 
 
     async def message_received(msg):
@@ -172,8 +175,7 @@ async def async_setup(hass, config):
                 config["unit_of_meas"] = new_state.attributes["unit_of_measurement"]
             if ("state_class" in new_state.attributes):
                 config["stat_cla"] = new_state.attributes["state_class"]
-            
-
+                
             publish_config = False
             if ent_domain == "sensor" and (has_includes or "device_class" in new_state.attributes):
                 publish_config = True
@@ -212,6 +214,27 @@ async def async_setup(hass, config):
                 publish_config = True
 
             if publish_config:
+                for entry in ent_reg.entities.values():
+                    if entry.entity_id == entity_id:
+                        config_entry_id = entry.config_entry_id
+
+                        devices = [ device for device in dev_reg.devices.values() if config_entry_id in device.config_entries ]
+                        if devices and devices[0]:
+                            device = devices[0]
+                            config["dev"] = {}
+                            if device.manufacturer:
+                                config["dev"]["mf"] = device.manufacturer
+                            if device.model:
+                                config["dev"]["mdl"] = device.model
+                            if device.name:
+                                config["dev"]["name"] = device.name
+                            if device.sw_version:
+                                config["dev"]["sw"] = device.sw_version
+                            if device.identifiers:
+                                config["dev"]["ids"] = [ id[1] for id in device.identifiers ]
+                            if device.connections:
+                                config["dev"]["cns"] = [ id[1] for id in device.connections ]
+
                 encoded = json.dumps(config, cls=JSONEncoder)
                 hass.components.mqtt.async_publish(f"{mybase}config", encoded, 1, True)
                 hass.data[DOMAIN][base_topic]["conf_published"].append(entity_id)
