@@ -255,6 +255,20 @@ async def async_setup(hass, config):
                 if ("effect" in new_state.attributes):
                     payload["effect"] = new_state.attributes["effect"]
                 
+                color = {}
+                if ("hs_color" in new_state.attributes):
+                    color["h"] = new_state.attributes["hs_color"][0]
+                    color["s"] = new_state.attributes["hs_color"][1]
+                if ("xy_color" in new_state.attributes):
+                    color["x"] = new_state.attributes["xy_color"][0]
+                    color["x"] = new_state.attributes["xy_color"][1]
+                if ("rgb_color" in new_state.attributes):
+                    color["r"] = new_state.attributes["rgb_color"][0]
+                    color["g"] = new_state.attributes["rgb_color"][1]
+                    color["b"] = new_state.attributes["rgb_color"][2]
+                if color:
+                    payload["color"] = color
+
                 hass.components.mqtt.async_publish(f"{mybase}state", json.dumps(payload, cls=JSONEncoder), 1, True)
 
                 payload = "offline" if new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, None) else "online"
