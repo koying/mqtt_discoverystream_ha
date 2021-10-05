@@ -13,6 +13,8 @@ from homeassistant.const import (
     STATE_OFF,
     STATE_ON,
     CONF_INCLUDE,
+    STATE_UNAVAILABLE,
+    STATE_UNKNOWN,
 )
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
@@ -167,7 +169,8 @@ async def async_setup(hass, config):
                 "uniq_id": f"mqtt_{entity_id}",
                 "name": ent_id.replace("_", " ") .title(),
                 "stat_t": f"{mybase}state",
-                "json_attr_t": f"{mybase}attributes"
+                "json_attr_t": f"{mybase}attributes",
+                "avty_t": f"{mybase}availability"
             }
             if ("device_class" in new_state.attributes):
                 config["dev_cla"] = new_state.attributes["device_class"]
@@ -253,9 +256,15 @@ async def async_setup(hass, config):
                     payload["effect"] = new_state.attributes["effect"]
                 
                 hass.components.mqtt.async_publish(f"{mybase}state", json.dumps(payload, cls=JSONEncoder), 1, True)
+
+                payload = "offline" if new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, None) else "online"
+                hass.components.mqtt.async_publish(f"{mybase}availability", payload, 1, True)
             else:
                 payload = new_state.state
                 hass.components.mqtt.async_publish(f"{mybase}state", payload, 1, True)
+
+                payload = "offline" if new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, None) else "online"
+                hass.components.mqtt.async_publish(f"{mybase}availability", payload, 1, True)
 
                 attributes = {}
                 for key, val in new_state.attributes.items():
