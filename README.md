@@ -5,7 +5,14 @@ Besides the functionalities of the hereabove, it also allows to publish and hand
 
 ## Changelog
 
+### 0.5
+
+- Add device support
+- FIX color support
+- Add availability support
+
 ### 0.4
+
 
 - Add device_tracker
 - Add light transitions
