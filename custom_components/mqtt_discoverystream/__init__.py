@@ -1,4 +1,5 @@
 """Publish simple item state changes via MQTT."""
+import asyncio
 import json
 import logging
 
@@ -134,6 +135,12 @@ async def async_setup(hass, config):
                     _LOGGER.error(f'Invalid state for "set_light" - payload: {msg.payload} for {entity}')
 
 
+    async def mqtt_publish(topic, payload, qos=None, retain=None):
+        if asyncio.iscoroutinefunction(hass.components.mqtt.async_publish):
+            await hass.components.mqtt.async_publish(hass, topic, payload, qos, retain)
+        else:
+            hass.components.mqtt.publish(topic, payload, qos, retain)
+
     async def _state_publisher(entity_id, old_state, new_state):
         if new_state is None:
             return
@@ -145,18 +152,18 @@ async def async_setup(hass, config):
 
         if publish_timestamps:
             if new_state.last_updated:
-                hass.components.mqtt.async_publish(
+                await mqtt_publish(
                     f"{mybase}last_updated", new_state.last_updated.isoformat(), 1, True
                 )
             if new_state.last_changed:
-                hass.components.mqtt.async_publish(
+                await mqtt_publish(
                     f"{mybase}last_changed", new_state.last_changed.isoformat(), 1, True
                 )
 
         if publish_attributes:
             for key, val in new_state.attributes.items():
                 encoded_val = json.dumps(val, cls=JSONEncoder)
-                hass.components.mqtt.async_publish(mybase + key, encoded_val, 1, True)
+                await mqtt_publish(mybase + key, encoded_val, 1, True)
 
         ent_parts = entity_id.split(".") 
         ent_domain = ent_parts[0]
@@ -236,7 +243,7 @@ async def async_setup(hass, config):
                             config["dev"]["cns"] = device.connections
 
                 encoded = json.dumps(config, cls=JSONEncoder)
-                hass.components.mqtt.async_publish(f"{mybase}config", encoded, 1, True)
+                await mqtt_publish(f"{mybase}config", encoded, 1, True)
                 hass.data[DOMAIN][base_topic]["conf_published"].append(entity_id)
 
         if publish_discovery:
@@ -267,25 +274,25 @@ async def async_setup(hass, config):
                 if color:
                     payload["color"] = color
 
-                hass.components.mqtt.async_publish(f"{mybase}state", json.dumps(payload, cls=JSONEncoder), 1, True)
+                await mqtt_publish(f"{mybase}state", json.dumps(payload, cls=JSONEncoder), 1, True)
 
                 payload = "offline" if new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, None) else "online"
-                hass.components.mqtt.async_publish(f"{mybase}availability", payload, 1, True)
+                await mqtt_publish(f"{mybase}availability", payload, 1, True)
             else:
                 payload = new_state.state
-                hass.components.mqtt.async_publish(f"{mybase}state", payload, 1, True)
+                await mqtt_publish(f"{mybase}state", payload, 1, True)
 
                 payload = "offline" if new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, None) else "online"
-                hass.components.mqtt.async_publish(f"{mybase}availability", payload, 1, True)
+                await mqtt_publish(f"{mybase}availability", payload, 1, True)
 
                 attributes = {}
                 for key, val in new_state.attributes.items():
                     attributes[key] = val
                 encoded = json.dumps(attributes, cls=JSONEncoder)
-                hass.components.mqtt.async_publish(f"{mybase}attributes", encoded, 1, True)
+                await mqtt_publish(f"{mybase}attributes", encoded, 1, True)
         else:
             payload = new_state.state
-            hass.components.mqtt.async_publish(f"{mybase}state", payload, 1, True)
+            await mqtt_publish(f"{mybase}state", payload, 1, True)
 
 
     if publish_discovery:
