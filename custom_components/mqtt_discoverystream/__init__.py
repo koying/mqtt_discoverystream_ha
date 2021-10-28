@@ -28,7 +28,6 @@ from homeassistant.components.light import (
     SUPPORT_COLOR_TEMP,
     SUPPORT_EFFECT,
 )
-from homeassistant.core import callback
 from homeassistant.helpers import device_registry, entity_registry
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import get_supported_features
@@ -135,8 +134,7 @@ async def async_setup(hass, config):
                     _LOGGER.error(f'Invalid state for "set_light" - payload: {msg.payload} for {entity}')
 
 
-    @callback
-    def _state_publisher(entity_id, old_state, new_state):
+    async def _state_publisher(entity_id, old_state, new_state):
         if new_state is None:
             return
 
