@@ -5,6 +5,10 @@ Besides the functionalities of the hereabove, it also allows to publish and hand
 
 ## Changelog
 
+### 0.6
+
+- Adapt to 2021.12
+
 ### 0.5
 
 - Add device support
