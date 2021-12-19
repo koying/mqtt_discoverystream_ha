@@ -203,13 +203,10 @@ async def async_setup(hass, config):
                 publish_config = True
 
             elif ent_domain == "light":
-                config = {
-                    "uniq_id": f"mqtt_{entity_id}",
-                    "name": ent_id.replace("_", " ") .title(),
-                    "stat_t": f"{mybase}state",
-                    "cmd_t": f"{mybase}set_light",
-                    "schema": "json"
-                }
+                del config["json_attr_t"]
+                config["cmd_t"] = f"{mybase}set_light"
+                config["schema"] = "json"
+
                 supported_features = get_supported_features(hass, entity_id)
                 if supported_features & SUPPORT_BRIGHTNESS:
                     config["brightness"] = True
