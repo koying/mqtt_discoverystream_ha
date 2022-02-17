@@ -5,9 +5,13 @@ Besides the functionalities of the hereabove, it also allows to publish and hand
 
 ## Changelog
 
+### 0.8
+
+- Add "discovery_topic" to split config and state topics
+
 ### 0.7
 
-- Fixa vailability for lights
+- Fix availability for lights
 
 ### 0.6
 
@@ -42,7 +46,7 @@ Besides the functionalities of the hereabove, it also allows to publish and hand
     - switches
     - lights (partial)
 
-## Pre-requistes
+## Pre-requisites
 
 1. MQTT configured
 
@@ -86,13 +90,14 @@ mqtt_discoverystream:
 This integration can only be configuration via YAML.
 The base options are the same as the mqtt_statestream one. 
 
-| key                | default | required | description                                                                |
-| ------------------ | ------- | -------- | -------------------------------------------------------------------------- |
-| base_topic         | none    | yes      | Base topic used to generate the actual topic used to publish.              |
-| publish_attributes | false   | no       | Publish attributes of the entity as well as the state.                     |
-| publish_timestamps | false   | no       | Publish the last_changed and last_updated timestamps for the entity.       |
-| publish_discovery  | false   | no       | Publish the discovery topic ("config").                                    |
-| include / exclude  | none    | no       | Configure which integrations should be included / exluded from publishing. |
+| key                | default | required | description                                                                  |
+| ------------------ | ------- | -------- | ---------------------------------------------------------------------------- |
+| base_topic         | none    | yes      | Base topic used to generate the actual topic used to publish.                |
+| discovery_topic    | none    | no       | Topic where the configuration topics will be created. Defaults to base_topic |
+| publish_attributes | false   | no       | Publish attributes of the entity as well as the state.                       |
+| publish_timestamps | false   | no       | Publish the last_changed and last_updated timestamps for the entity.         |
+| publish_discovery  | false   | no       | Publish the discovery topic ("config").                                      |
+| include / exclude  | none    | no       | Configure which integrations should be included / excluded from publishing.  |
 
 ## Credits
 
