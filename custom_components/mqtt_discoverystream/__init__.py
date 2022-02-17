@@ -51,6 +51,7 @@ ATTR_G = "g"
 ATTR_B = "b"
 
 CONF_BASE_TOPIC = "base_topic"
+CONF_DISCOVERY_TOPIC = "discovery_topic"
 CONF_PUBLISH_ATTRIBUTES = "publish_attributes"
 CONF_PUBLISH_TIMESTAMPS = "publish_timestamps"
 CONF_PUBLISH_DISCOVERY = "publish_discovery"
@@ -62,6 +63,7 @@ CONFIG_SCHEMA = vol.Schema(
         DOMAIN: INCLUDE_EXCLUDE_BASE_FILTER_SCHEMA.extend(
             {
                 vol.Required(CONF_BASE_TOPIC): valid_publish_topic,
+                vol.Optional(CONF_DISCOVERY_TOPIC): vol.Any(valid_publish_topic, None),
                 vol.Optional(CONF_PUBLISH_ATTRIBUTES, default=False): cv.boolean,
                 vol.Optional(CONF_PUBLISH_TIMESTAMPS, default=False): cv.boolean,
                 vol.Optional(CONF_PUBLISH_DISCOVERY, default=False): cv.boolean,
@@ -78,14 +80,17 @@ async def async_setup(hass, config):
     publish_filter = convert_include_exclude_filter(conf)
     has_includes = True if conf.get(CONF_INCLUDE) else False
     base_topic = conf.get(CONF_BASE_TOPIC)
+    discovery_topic = conf.get(CONF_DISCOVERY_TOPIC) if conf.get(CONF_DISCOVERY_TOPIC) else conf.get(CONF_BASE_TOPIC)
     publish_attributes = conf.get(CONF_PUBLISH_ATTRIBUTES)
     publish_timestamps = conf.get(CONF_PUBLISH_TIMESTAMPS)
     publish_discovery = conf.get(CONF_PUBLISH_DISCOVERY)
     if not base_topic.endswith("/"):
         base_topic = f"{base_topic}/"
+    if not discovery_topic.endswith("/"):
+        discovery_topic = f"{discovery_topic}/"
     hass.data[DOMAIN] = {}
-    hass.data[DOMAIN][base_topic] = {}
-    hass.data[DOMAIN][base_topic]["conf_published"] = []
+    hass.data[DOMAIN][discovery_topic] = {}
+    hass.data[DOMAIN][discovery_topic]["conf_published"] = []
     dev_reg = await hass.helpers.device_registry.async_get_registry()
     ent_reg = await hass.helpers.entity_registry.async_get_registry()
 
@@ -169,7 +174,7 @@ async def async_setup(hass, config):
         ent_domain = ent_parts[0]
         ent_id = ent_parts[1]
 
-        if publish_discovery and not entity_id in hass.data[DOMAIN][base_topic]["conf_published"]:
+        if publish_discovery and not entity_id in hass.data[DOMAIN][discovery_topic]["conf_published"]:
             config = {
                 "uniq_id": f"mqtt_{entity_id}",
                 "name": ent_id.replace("_", " ") .title(),
@@ -240,8 +245,9 @@ async def async_setup(hass, config):
                             config["dev"]["cns"] = device.connections
 
                 encoded = json.dumps(config, cls=JSONEncoder)
-                await mqtt_publish(f"{mybase}config", encoded, 1, True)
-                hass.data[DOMAIN][base_topic]["conf_published"].append(entity_id)
+                entity_disc_topic = f"{discovery_topic}{entity_id.replace('.', '/')}/config"
+                await mqtt_publish(entity_disc_topic, encoded, 1, True)
+                hass.data[DOMAIN][discovery_topic]["conf_published"].append(entity_id)
 
         if publish_discovery:
             if ent_domain == "light":
