@@ -5,6 +5,10 @@ Besides the functionalities of the hereabove, it also allows to publish and hand
 
 ## Changelog
 
+### 0.9
+
+- Fix `async_get_registry` warning
+
 ### 0.8
 
 - Add "discovery_topic" to split config and state topics
