@@ -1,6 +1,6 @@
 {
   "domain": "mqtt_discoverystream",
-  "name": "MQTT Discoverytream",
+  "name": "MQTT Discoverystream",
   "documentation": "https://github.com/koying/mqtt_discoverystream_ha",
   "issue_tracker": "https://github.com/koying/mqtt_discoverystream_ha/issues",
   "dependencies": ["mqtt"],
