@@ -91,8 +91,8 @@ async def async_setup(hass, config):
     hass.data[DOMAIN] = {}
     hass.data[DOMAIN][discovery_topic] = {}
     hass.data[DOMAIN][discovery_topic]["conf_published"] = []
-    dev_reg = await hass.helpers.device_registry.async_get_registry()
-    ent_reg = await hass.helpers.entity_registry.async_get_registry()
+    dev_reg = device_registry.async_get(hass)
+    ent_reg = entity_registry.async_get(hass)
 
 
     async def message_received(msg):
