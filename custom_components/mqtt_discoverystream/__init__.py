@@ -220,6 +220,8 @@ async def async_setup(hass, config):
                 if "supported_color_modes" in new_state.attributes:
                     config["color_mode"] = True
                     config["supported_color_modes"] = new_state.attributes["supported_color_modes"]
+                    if "brightness" in config["supported_color_modes"]:
+                        config["brightness"] = True
 
                 publish_config = True
 
