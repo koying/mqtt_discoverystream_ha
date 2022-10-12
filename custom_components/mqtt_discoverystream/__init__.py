@@ -24,6 +24,7 @@ from homeassistant.components.light import (
     ATTR_XY_COLOR,
     ATTR_HS_COLOR,
     ATTR_TRANSITION,
+    ATTR_EFFECT,
     SUPPORT_BRIGHTNESS,
     SUPPORT_COLOR,
     SUPPORT_COLOR_TEMP,
@@ -133,6 +134,8 @@ async def async_setup(hass, config):
                             service_payload[ATTR_XY_COLOR] = [ payload_json[ATTR_COLOR][ATTR_X], payload_json[ATTR_COLOR][ATTR_Y] ]
                         if ATTR_R in payload_json[ATTR_COLOR]:
                             service_payload[ATTR_RGB_COLOR] = [ payload_json[ATTR_COLOR][ATTR_R], payload_json[ATTR_COLOR][ATTR_G], payload_json[ATTR_COLOR][ATTR_B] ]
+                    if ATTR_EFFECT in payload_json:
+                        service_payload[ATTR_EFFECT] = payload_json[ATTR_EFFECT]
                     await hass.services.async_call(domain, SERVICE_TURN_ON, service_payload)
                 elif payload_json["state"] == "OFF":
                     await hass.services.async_call(domain, SERVICE_TURN_OFF, service_payload)
@@ -222,6 +225,9 @@ async def async_setup(hass, config):
                     config["supported_color_modes"] = new_state.attributes["supported_color_modes"]
                     if "brightness" in config["supported_color_modes"]:
                         config["brightness"] = True
+                if "effect_list" in new_state.attributes:
+                    config["effect"] = True
+                    config["fx_list"] = new_state.attributes["effect_list"]
 
                 publish_config = True
 
