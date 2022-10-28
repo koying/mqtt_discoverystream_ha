@@ -277,7 +277,7 @@ async def async_setup(hass, config):
                     color["s"] = new_state.attributes["hs_color"][1]
                 if ("xy_color" in new_state.attributes):
                     color["x"] = new_state.attributes["xy_color"][0]
-                    color["x"] = new_state.attributes["xy_color"][1]
+                    color["y"] = new_state.attributes["xy_color"][1]
                 if ("rgb_color" in new_state.attributes):
                     color["r"] = new_state.attributes["rgb_color"][0]
                     color["g"] = new_state.attributes["rgb_color"][1]
