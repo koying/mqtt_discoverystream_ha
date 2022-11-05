@@ -216,15 +216,14 @@ async def async_setup(hass, config):
                 config["schema"] = "json"
 
                 supported_features = get_supported_features(hass, entity_id)
-                if supported_features & SUPPORT_BRIGHTNESS or "brightness" in new_state.attributes:
+                if (supported_features & SUPPORT_BRIGHTNESS) or ("brightness" in new_state.attributes):
                     config["brightness"] = True
                 if supported_features & SUPPORT_EFFECT:
                     config["effect"] = True
                 if "supported_color_modes" in new_state.attributes:
                     config["color_mode"] = True
                     config["supported_color_modes"] = new_state.attributes["supported_color_modes"]
-                    if "brightness" in config["supported_color_modes"]:
-                        config["brightness"] = True
+                    config["brightness"] = True
                 if "effect_list" in new_state.attributes:
                     config["effect"] = True
                     config["fx_list"] = new_state.attributes["effect_list"]
