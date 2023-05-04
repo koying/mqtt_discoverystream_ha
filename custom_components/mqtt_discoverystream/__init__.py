@@ -39,6 +39,7 @@ from homeassistant.helpers.entityfilter import (
 )
 from homeassistant.helpers.event import async_track_state_change
 from homeassistant.helpers.json import JSONEncoder
+from homeassistant.setup import async_when_setup
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -305,9 +306,12 @@ async def async_setup(hass, config):
             await mqtt_publish(f"{mybase}state", payload, 1, True)
 
 
-    if publish_discovery:
+    async def my_async_subscribe_mqtt(hass, _):
         await hass.components.mqtt.async_subscribe(f"{base_topic}switch/+/set", message_received)
         await hass.components.mqtt.async_subscribe(f"{base_topic}light/+/set_light", message_received)
+
+    if publish_discovery:
+        async_when_setup(hass, "mqtt", my_async_subscribe_mqtt)
 
     async_track_state_change(hass, MATCH_ALL, _state_publisher)
     return True
