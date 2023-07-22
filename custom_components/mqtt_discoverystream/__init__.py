@@ -258,6 +258,10 @@ async def async_setup(hass, config):
                 hass.data[DOMAIN][discovery_topic]["conf_published"].append(entity_id)
 
         if publish_discovery:
+            if new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, None):
+                await mqtt_publish(f"{mybase}availability", "offline", 1, True)
+                return
+
             if ent_domain == "light":
                 payload = {
                     "state": "ON" if new_state.state == STATE_ON else "OFF",
@@ -286,21 +290,18 @@ async def async_setup(hass, config):
                     payload["color"] = color
 
                 await mqtt_publish(f"{mybase}state", json.dumps(payload, cls=JSONEncoder), 1, True)
-
-                payload = "offline" if new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, None) else "online"
-                await mqtt_publish(f"{mybase}availability", payload, 1, True)
             else:
                 payload = new_state.state
                 await mqtt_publish(f"{mybase}state", payload, 1, True)
-
-                payload = "offline" if new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, None) else "online"
-                await mqtt_publish(f"{mybase}availability", payload, 1, True)
 
                 attributes = {}
                 for key, val in new_state.attributes.items():
                     attributes[key] = val
                 encoded = json.dumps(attributes, cls=JSONEncoder)
                 await mqtt_publish(f"{mybase}attributes", encoded, 1, True)
+
+            if not old_state or old_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, None):
+                await mqtt_publish(f"{mybase}availability", "online", 1, True)
         else:
             payload = new_state.state
             await mqtt_publish(f"{mybase}state", payload, 1, True)
