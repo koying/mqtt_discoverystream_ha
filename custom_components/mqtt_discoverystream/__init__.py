@@ -57,6 +57,7 @@ CONF_DISCOVERY_TOPIC = "discovery_topic"
 CONF_PUBLISH_ATTRIBUTES = "publish_attributes"
 CONF_PUBLISH_TIMESTAMPS = "publish_timestamps"
 CONF_PUBLISH_DISCOVERY = "publish_discovery"
+CONF_UNIQUE_PREFIX = "unique_prefix"
 
 DOMAIN = "mqtt_discoverystream"
 
@@ -69,6 +70,7 @@ CONFIG_SCHEMA = vol.Schema(
                 vol.Optional(CONF_PUBLISH_ATTRIBUTES, default=False): cv.boolean,
                 vol.Optional(CONF_PUBLISH_TIMESTAMPS, default=False): cv.boolean,
                 vol.Optional(CONF_PUBLISH_DISCOVERY, default=False): cv.boolean,
+                vol.Optional(CONF_UNIQUE_PREFIX, default="mqtt"): cv.string,
             }
         ),
     },
@@ -86,6 +88,7 @@ async def async_setup(hass, config):
     publish_attributes = conf.get(CONF_PUBLISH_ATTRIBUTES)
     publish_timestamps = conf.get(CONF_PUBLISH_TIMESTAMPS)
     publish_discovery = conf.get(CONF_PUBLISH_DISCOVERY)
+    unique_prefix = conf.get(CONF_UNIQUE_PREFIX)
     if not base_topic.endswith("/"):
         base_topic = f"{base_topic}/"
     if not discovery_topic.endswith("/"):
@@ -180,7 +183,7 @@ async def async_setup(hass, config):
 
         if publish_discovery and not entity_id in hass.data[DOMAIN][discovery_topic]["conf_published"]:
             config = {
-                "uniq_id": f"mqtt_{entity_id}",
+                "uniq_id": f"{unique_prefix}_{entity_id}",
                 "name": ent_id.replace("_", " ") .title(),
                 "stat_t": f"{mybase}state",
                 "json_attr_t": f"{mybase}attributes",
