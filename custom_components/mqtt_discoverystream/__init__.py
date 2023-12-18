@@ -300,8 +300,7 @@ async def async_setup(hass, config):
                 encoded = json.dumps(attributes, cls=JSONEncoder)
                 await mqtt_publish(f"{mybase}attributes", encoded, 1, True)
 
-            if not old_state or old_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, None):
-                await mqtt_publish(f"{mybase}availability", "online", 1, True)
+            await mqtt_publish(f"{mybase}availability", "online", 1, True)
         else:
             payload = new_state.state
             await mqtt_publish(f"{mybase}state", payload, 1, True)
