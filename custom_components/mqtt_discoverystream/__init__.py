@@ -276,13 +276,13 @@ async def async_setup(hass, config):
                     payload["effect"] = new_state.attributes["effect"]
                 
                 color = {}
-                if ("hs_color" in new_state.attributes):
+                if ("hs_color" in new_state.attributes and new_state.attributes["hs_color"]):
                     color["h"] = new_state.attributes["hs_color"][0]
                     color["s"] = new_state.attributes["hs_color"][1]
-                if ("xy_color" in new_state.attributes):
+                if ("xy_color" in new_state.attributes and new_state.attributes["xy_color"]):
                     color["x"] = new_state.attributes["xy_color"][0]
                     color["y"] = new_state.attributes["xy_color"][1]
-                if ("rgb_color" in new_state.attributes):
+                if ("rgb_color" in new_state.attributes and new_state.attributes["rgb_color"]):
                     color["r"] = new_state.attributes["rgb_color"][0]
                     color["g"] = new_state.attributes["rgb_color"][1]
                     color["b"] = new_state.attributes["rgb_color"][2]
