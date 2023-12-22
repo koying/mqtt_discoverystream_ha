@@ -107,6 +107,10 @@ async def async_setup(hass, config):
         entity = explode_topic[2]
         element = explode_topic[3]
 
+        # Only handle service calls for discoveries we published
+        if f"{domain}.{entity}" not in hass.data[DOMAIN][discovery_topic]["conf_published"]:
+            return
+        
         _LOGGER.debug(f"Message received: topic {msg.topic}; payload: {msg.payload}")
         if element == "set":
             if msg.payload == STATE_ON:
