@@ -5,7 +5,11 @@ import logging
 
 import voluptuous as vol
 
-from homeassistant.components.mqtt import valid_publish_topic
+from homeassistant.components.mqtt import (
+  valid_publish_topic, 
+  async_subscribe,
+  async_publish,
+)
 from homeassistant.const import (
     MATCH_ALL,
     ATTR_ENTITY_ID,
@@ -152,8 +156,8 @@ async def async_setup(hass, config):
 
 
     async def mqtt_publish(topic, payload, qos=None, retain=None):
-        if asyncio.iscoroutinefunction(hass.components.mqtt.async_publish):
-            await hass.components.mqtt.async_publish(hass, topic, payload, qos, retain)
+        if asyncio.iscoroutinefunction(async_publish):
+            await async_publish(hass, topic, payload, qos, retain)
         else:
             hass.components.mqtt.publish(topic, payload, qos, retain)
 
@@ -314,8 +318,8 @@ async def async_setup(hass, config):
 
 
     async def my_async_subscribe_mqtt(hass, _):
-        await hass.components.mqtt.async_subscribe(f"{base_topic}switch/+/set", message_received)
-        await hass.components.mqtt.async_subscribe(f"{base_topic}light/+/set_light", message_received)
+        await async_subscribe(hass, f"{base_topic}switch/+/set", message_received)
+        await async_subscribe(hass, f"{base_topic}light/+/set_light", message_received)
 
     if publish_discovery:
         async_when_setup(hass, "mqtt", my_async_subscribe_mqtt)
