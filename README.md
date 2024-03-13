@@ -5,6 +5,15 @@ Besides the functionalities of the hereabove, it also allows to publish and hand
 
 ## Changelog
 
+### 1.0
+
+- FIX: ha.components depreciation
+- FIX: Only handle service calls for discoveries we published
+- ADD: customize unique prefix
+- FIX: color attr when turned off
+- FIX: always publish
+- FIX: availability
+
 ### 0.9
 
 - Fix `async_get_registry` warning
