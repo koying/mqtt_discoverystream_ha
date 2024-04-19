@@ -21,6 +21,7 @@ from homeassistant.const import (
     STATE_UNAVAILABLE,
     STATE_UNKNOWN,
 )
+from homeassistant.components.button import SERVICE_PRESS
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
     ATTR_COLOR_TEMP,
@@ -121,6 +122,8 @@ async def async_setup(hass, config):
                await  hass.services.async_call(domain, SERVICE_TURN_ON, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
             elif msg.payload == STATE_OFF:
                await hass.services.async_call(domain, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
+            elif msg.payload == SERVICE_PRESS:
+                await hass.services.async_call(domain, SERVICE_PRESS, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
             else:
                 _LOGGER.error(f'Invalid service for "set" - payload: {msg.payload} for {entity}')
         if element == "set_light":
@@ -242,6 +245,11 @@ async def async_setup(hass, config):
 
                 publish_config = True
 
+            elif ent_domain == "button":
+                config["pl_prs"] = SERVICE_PRESS
+                config["cmd_t"] = f"{mybase}set"
+                publish_config = True
+
             if publish_config:
                 for entry in ent_reg.entities.values():
                     if entry.entity_id != entity_id:
@@ -320,6 +328,7 @@ async def async_setup(hass, config):
     async def my_async_subscribe_mqtt(hass, _):
         await async_subscribe(hass, f"{base_topic}switch/+/set", message_received)
         await async_subscribe(hass, f"{base_topic}light/+/set_light", message_received)
+        await async_subscribe(hass, f"{base_topic}button/+/set", message_received)
 
     if publish_discovery:
         async_when_setup(hass, "mqtt", my_async_subscribe_mqtt)
