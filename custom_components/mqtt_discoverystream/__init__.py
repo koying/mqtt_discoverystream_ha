@@ -124,6 +124,8 @@ async def async_setup(hass, config):
                await hass.services.async_call(domain, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
             elif msg.payload == SERVICE_PRESS:
                 await hass.services.async_call(domain, SERVICE_PRESS, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
+            elif domain == "script":
+                await hass.services.async_call(domain, entity)
             else:
                 _LOGGER.error(f'Invalid service for "set" - payload: {msg.payload} for {entity}')
         if element == "set_light":
@@ -253,6 +255,11 @@ async def async_setup(hass, config):
                 config["cmd_t"] = f"{mybase}set"
                 publish_config = True
 
+            elif ent_domain == "script":
+                config["pl_prs"] = entity_id
+                config["cmd_t"] = f"{mybase}set"
+                publish_config = True
+
             if publish_config:
                 for entry in ent_reg.entities.values():
                     if entry.entity_id != entity_id:
@@ -342,6 +349,8 @@ async def async_setup(hass, config):
         entity_parts = entity_id.split('.')
         if entity_parts[0] == "input_boolean":
             entity_parts[0] = "switch"
+        elif entity_parts[0] == "script":
+            entity_parts[0] = "button"
         return f"{discovery_topic}{'/'.join(entity_parts)}/config"
 
 
@@ -350,6 +359,7 @@ async def async_setup(hass, config):
         await async_subscribe(hass, f"{base_topic}light/+/set_light", message_received)
         await async_subscribe(hass, f"{base_topic}input_boolean/+/set", message_received)
         await async_subscribe(hass, f"{base_topic}button/+/set", message_received)
+        await async_subscribe(hass, f"{base_topic}script/+/set", message_received)
 
     if publish_discovery:
         async_when_setup(hass, "mqtt", my_async_subscribe_mqtt)
