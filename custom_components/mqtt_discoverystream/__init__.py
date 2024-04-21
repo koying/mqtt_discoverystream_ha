@@ -21,6 +21,7 @@ from homeassistant.const import (
     STATE_UNAVAILABLE,
     STATE_UNKNOWN,
 )
+from homeassistant.components.button import SERVICE_PRESS
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
     ATTR_COLOR_TEMP,
@@ -121,6 +122,8 @@ async def async_setup(hass, config):
                await  hass.services.async_call(domain, SERVICE_TURN_ON, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
             elif msg.payload == STATE_OFF:
                await hass.services.async_call(domain, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
+            elif msg.payload == SERVICE_PRESS:
+                await hass.services.async_call(domain, SERVICE_PRESS, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
             else:
                 _LOGGER.error(f'Invalid service for "set" - payload: {msg.payload} for {entity}')
         if element == "set_light":
@@ -192,11 +195,14 @@ async def async_setup(hass, config):
         if publish_discovery and not entity_id in hass.data[DOMAIN][discovery_topic]["conf_published"]:
             config = {
                 "uniq_id": f"{unique_prefix}_{entity_id}",
-                "name": ent_id.replace("_", " ") .title(),
                 "stat_t": f"{mybase}state",
                 "json_attr_t": f"{mybase}attributes",
                 "avty_t": f"{mybase}availability"
             }
+
+            if ("icon" in new_state.attributes):
+                config["ic"]= new_state.attributes["icon"]
+
             if ("device_class" in new_state.attributes):
                 config["dev_cla"] = new_state.attributes["device_class"]
             if ("unit_of_measurement" in new_state.attributes):
@@ -242,6 +248,11 @@ async def async_setup(hass, config):
 
                 publish_config = True
 
+            elif ent_domain == "button":
+                config["pl_prs"] = SERVICE_PRESS
+                config["cmd_t"] = f"{mybase}set"
+                publish_config = True
+
             if publish_config:
                 for entry in ent_reg.entities.values():
                     if entry.entity_id != entity_id:
@@ -262,6 +273,17 @@ async def async_setup(hass, config):
                             config["dev"]["ids"] = [ id[1] for id in device.identifiers ]
                         if device.connections:
                             config["dev"]["cns"] = device.connections
+
+                    # Use the entity's name if it exists, use the device name (pass nothing) if the entity doesn't have one
+                    # Otherwise use the config entry name if the entity doesn't have a name and a device doesn't exist
+                    if entry.name:
+                        config["name"] = entry.name
+                    elif entry.original_name:
+                        config["name"] = entry.original_name
+                    elif "dev" not in config and "name" not in config:
+                        config["name"] = ent_id.replace("_", " ") .title()
+                    else:
+                        config["name"] = None
 
                 encoded = json.dumps(config, cls=JSONEncoder)
                 entity_disc_topic = generate_discovery_topic(entity_id)
@@ -327,6 +349,7 @@ async def async_setup(hass, config):
         await async_subscribe(hass, f"{base_topic}switch/+/set", message_received)
         await async_subscribe(hass, f"{base_topic}light/+/set_light", message_received)
         await async_subscribe(hass, f"{base_topic}input_boolean/+/set", message_received)
+        await async_subscribe(hass, f"{base_topic}button/+/set", message_received)
 
     if publish_discovery:
         async_when_setup(hass, "mqtt", my_async_subscribe_mqtt)
