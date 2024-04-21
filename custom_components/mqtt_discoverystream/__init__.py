@@ -250,7 +250,7 @@ async def async_setup(hass, config):
 
                 publish_config = True
 
-            elif ent_domain == "button":
+            elif ent_domain == "button" or ent_domain == "input_button":
                 config["pl_prs"] = SERVICE_PRESS
                 config["cmd_t"] = f"{mybase}set"
                 publish_config = True
@@ -351,6 +351,8 @@ async def async_setup(hass, config):
             entity_parts[0] = "switch"
         elif entity_parts[0] == "script":
             entity_parts[0] = "button"
+        elif entity_parts[0] == "input_button":
+            entity_parts[0] = "button"
         return f"{discovery_topic}{'/'.join(entity_parts)}/config"
 
 
@@ -360,6 +362,7 @@ async def async_setup(hass, config):
         await async_subscribe(hass, f"{base_topic}input_boolean/+/set", message_received)
         await async_subscribe(hass, f"{base_topic}button/+/set", message_received)
         await async_subscribe(hass, f"{base_topic}script/+/set", message_received)
+        await async_subscribe(hass, f"{base_topic}input_button/+/set", message_received)
 
     if publish_discovery:
         async_when_setup(hass, "mqtt", my_async_subscribe_mqtt)
