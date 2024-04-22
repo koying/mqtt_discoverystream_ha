@@ -219,7 +219,7 @@ async def async_setup(hass, config):
                 config["pl_on"] = STATE_ON
                 publish_config = True
 
-            elif ent_domain == "switch":
+            elif ent_domain == "switch" or ent_domain == "input_boolean":
                 config["pl_off"] = STATE_OFF
                 config["pl_on"] = STATE_ON
                 config["cmd_t"] = f"{mybase}set"
@@ -286,7 +286,7 @@ async def async_setup(hass, config):
                         config["name"] = None
 
                 encoded = json.dumps(config, cls=JSONEncoder)
-                entity_disc_topic = f"{discovery_topic}{entity_id.replace('.', '/')}/config"
+                entity_disc_topic = generate_discovery_topic(entity_id)
                 await mqtt_publish(entity_disc_topic, encoded, 1, True)
                 hass.data[DOMAIN][discovery_topic]["conf_published"].append(entity_id)
 
@@ -338,10 +338,17 @@ async def async_setup(hass, config):
             payload = new_state.state
             await mqtt_publish(f"{mybase}state", payload, 1, True)
 
+    def generate_discovery_topic(entity_id):
+        entity_parts = entity_id.split('.')
+        if entity_parts[0] == "input_boolean":
+            entity_parts[0] = "switch"
+        return f"{discovery_topic}{'/'.join(entity_parts)}/config"
+
 
     async def my_async_subscribe_mqtt(hass, _):
         await async_subscribe(hass, f"{base_topic}switch/+/set", message_received)
         await async_subscribe(hass, f"{base_topic}light/+/set_light", message_received)
+        await async_subscribe(hass, f"{base_topic}input_boolean/+/set", message_received)
         await async_subscribe(hass, f"{base_topic}button/+/set", message_received)
 
     if publish_discovery:
