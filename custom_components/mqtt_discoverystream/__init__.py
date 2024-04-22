@@ -254,9 +254,11 @@ async def async_setup(hass, config):
                 publish_config = True
 
             if publish_config:
+                entity_exists = False
                 for entry in ent_reg.entities.values():
                     if entry.entity_id != entity_id:
                         continue
+                    entity_exists = True
                     for device in dev_reg.devices.values():
                         if device.id != entry.device_id:
                             continue
@@ -284,6 +286,8 @@ async def async_setup(hass, config):
                         config["name"] = ent_id.replace("_", " ") .title()
                     else:
                         config["name"] = None
+                if not entity_exists:
+                    config["name"] = new_state.attributes.get("friendly_name", ent_id.replace("_", " ") .title())
 
                 encoded = json.dumps(config, cls=JSONEncoder)
                 entity_disc_topic = generate_discovery_topic(entity_id)
