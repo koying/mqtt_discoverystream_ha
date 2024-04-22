@@ -5,6 +5,17 @@ Besides the functionalities of the hereabove, it also allows to publish and hand
 
 ## Changelog
 
+### 1.2
+
+- FIX: Avoid duplicating entity and device names + icon support (@rohankapoorcom)
+- ADD: button entities support (@rohankapoorcom)
+- ADD: input_booleans entities support (@rohankapoorcom)
+- ADD: devcontainer support (@rohankapoorcom)
+
+### 1.1
+
+unreleased
+
 ### 1.0
 
 - FIX: ha.components depreciation
