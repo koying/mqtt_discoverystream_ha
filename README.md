@@ -5,6 +5,10 @@ Besides the functionalities of the hereabove, it also allows to publish and hand
 
 ## Changelog
 
+### 1.3
+
+- FIX: name when entity is not in entity registry
+
 ### 1.2
 
 - FIX: Avoid duplicating entity and device names + icon support (@rohankapoorcom)
