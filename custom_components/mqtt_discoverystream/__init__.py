@@ -161,7 +161,7 @@ async def async_setup(hass, config):
         if asyncio.iscoroutinefunction(mqtt.async_publish):
             await mqtt.async_publish(hass, topic, payload, qos, retain)
         else:
-            hass.components.mqtt.publish(topic, payload, qos, retain)
+            mqtt.publish(topic, payload, qos, retain)
 
     async def _state_publisher(entity_id, old_state, new_state):
         if new_state is None:
