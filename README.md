@@ -5,6 +5,10 @@ Besides the functionalities of the hereabove, it also allows to publish and hand
 
 ## Changelog
 
+### 1.4
+
+- FIX: MQTT race condition at startup
+
 ### 1.3
 
 - FIX: name when entity is not in entity registry
