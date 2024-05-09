@@ -5,11 +5,7 @@ import logging
 
 import voluptuous as vol
 
-from homeassistant.components.mqtt import (
-  valid_publish_topic,
-  async_subscribe,
-  async_publish,
-)
+from homeassistant.components import mqtt
 from homeassistant.const import (
     MATCH_ALL,
     ATTR_ENTITY_ID,
@@ -70,8 +66,8 @@ CONFIG_SCHEMA = vol.Schema(
     {
         DOMAIN: INCLUDE_EXCLUDE_BASE_FILTER_SCHEMA.extend(
             {
-                vol.Required(CONF_BASE_TOPIC): valid_publish_topic,
-                vol.Optional(CONF_DISCOVERY_TOPIC): vol.Any(valid_publish_topic, None),
+                vol.Required(CONF_BASE_TOPIC): mqtt.valid_publish_topic,
+                vol.Optional(CONF_DISCOVERY_TOPIC): vol.Any(mqtt.valid_publish_topic, None),
                 vol.Optional(CONF_PUBLISH_ATTRIBUTES, default=False): cv.boolean,
                 vol.Optional(CONF_PUBLISH_TIMESTAMPS, default=False): cv.boolean,
                 vol.Optional(CONF_PUBLISH_DISCOVERY, default=False): cv.boolean,
@@ -112,8 +108,9 @@ async def async_setup(hass, config):
         entity = explode_topic[2]
         element = explode_topic[3]
 
-        # Only handle service calls for discoveries we published
-        if f"{domain}.{entity}" not in hass.data[DOMAIN][discovery_topic]["conf_published"]:
+        # Only handle service calls for discoveries we published (or intend to publish)
+        if (f"{domain}.{entity}" not in hass.data[DOMAIN][discovery_topic]["conf_published"]
+            and not publish_filter(f"{domain}.{entity}")):
             return
 
         _LOGGER.debug(f"Message received: topic {msg.topic}; payload: {msg.payload}")
@@ -161,10 +158,10 @@ async def async_setup(hass, config):
 
 
     async def mqtt_publish(topic, payload, qos=None, retain=None):
-        if asyncio.iscoroutinefunction(async_publish):
-            await async_publish(hass, topic, payload, qos, retain)
+        if asyncio.iscoroutinefunction(mqtt.async_publish):
+            await mqtt.async_publish(hass, topic, payload, qos, retain)
         else:
-            hass.components.mqtt.publish(topic, payload, qos, retain)
+            mqtt.publish(topic, payload, qos, retain)
 
     async def _state_publisher(entity_id, old_state, new_state):
         if new_state is None:
@@ -361,12 +358,17 @@ async def async_setup(hass, config):
 
 
     async def my_async_subscribe_mqtt(hass, _):
-        await async_subscribe(hass, f"{base_topic}switch/+/set", message_received)
-        await async_subscribe(hass, f"{base_topic}light/+/set_light", message_received)
-        await async_subscribe(hass, f"{base_topic}input_boolean/+/set", message_received)
-        await async_subscribe(hass, f"{base_topic}button/+/set", message_received)
-        await async_subscribe(hass, f"{base_topic}script/+/set", message_received)
-        await async_subscribe(hass, f"{base_topic}input_button/+/set", message_received)
+        await mqtt.async_subscribe(hass, f"{base_topic}switch/+/set", message_received)
+        await mqtt.async_subscribe(hass, f"{base_topic}light/+/set_light", message_received)
+        await mqtt.async_subscribe(hass, f"{base_topic}input_boolean/+/set", message_received)
+        await mqtt.async_subscribe(hass, f"{base_topic}button/+/set", message_received)
+        await mqtt.async_subscribe(hass, f"{base_topic}script/+/set", message_received)
+        await mqtt.async_subscribe(hass, f"{base_topic}input_button/+/set", message_received)
+
+    # Make sure MQTT integration is enabled and the client is available
+    if not await mqtt.async_wait_for_mqtt_client(hass):
+        _LOGGER.error("MQTT integration is not available")
+        return False
 
     if publish_discovery:
         async_when_setup(hass, "mqtt", my_async_subscribe_mqtt)
