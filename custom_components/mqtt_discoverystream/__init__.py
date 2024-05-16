@@ -360,6 +360,8 @@ async def async_setup(hass, config):
             entity_parts[0] = "button"
         elif entity_parts[0] == "input_button":
             entity_parts[0] = "button"
+        if unique_prefix:
+            entity_parts[1] = f"{unique_prefix}_{entity_parts[1]}"
         return f"{discovery_topic}{'/'.join(entity_parts)}/config"
 
 
