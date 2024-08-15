@@ -38,7 +38,8 @@ from homeassistant.helpers.entityfilter import (
     INCLUDE_EXCLUDE_BASE_FILTER_SCHEMA,
     convert_include_exclude_filter,
 )
-from homeassistant.helpers.event import async_track_state_change
+from homeassistant.core import Event, EventStateChangedData
+from homeassistant.helper.event import async_track_state_change_event
 from homeassistant.helpers.json import JSONEncoder
 from homeassistant.setup import async_when_setup
 
@@ -163,7 +164,10 @@ async def async_setup(hass, config):
         else:
             mqtt.publish(topic, payload, qos, retain)
 
-    async def _state_publisher(entity_id, old_state, new_state):
+    async def _state_publisher(event: Event[EventStateChangedData]) -> None:
+        entity_id = event.data["entity_id"]
+        new_state = event.data["new_state"]
+
         if new_state is None:
             return
 
@@ -373,6 +377,6 @@ async def async_setup(hass, config):
     if publish_discovery:
         async_when_setup(hass, "mqtt", my_async_subscribe_mqtt)
 
-    async_track_state_change(hass, MATCH_ALL, _state_publisher)
+    async_track_state_change_event(hass, MATCH_ALL, _state_publisher)
     return True
 
