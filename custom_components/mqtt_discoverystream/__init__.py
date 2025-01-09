@@ -242,7 +242,6 @@ async def async_setup(hass, config):
                 if supported_features & SUPPORT_EFFECT:
                     config["effect"] = True
                 if "supported_color_modes" in new_state.attributes:
-                    config["color_mode"] = True
                     config["supported_color_modes"] = new_state.attributes["supported_color_modes"]
                     config["brightness"] = True
                 if "effect_list" in new_state.attributes:
