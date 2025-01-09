@@ -312,8 +312,6 @@ async def async_setup(hass, config):
                 }
                 if ("brightness" in new_state.attributes):
                     payload["brightness"] = new_state.attributes["brightness"]
-                if ("color_mode" in new_state.attributes):
-                    payload["color_mode"] = new_state.attributes["color_mode"]
                 if ("color_temp" in new_state.attributes):
                     payload["color_temp"] = new_state.attributes["color_temp"]
                 if ("effect" in new_state.attributes):
