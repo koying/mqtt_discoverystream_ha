@@ -60,6 +60,7 @@ CONF_PUBLISH_ATTRIBUTES = "publish_attributes"
 CONF_PUBLISH_TIMESTAMPS = "publish_timestamps"
 CONF_PUBLISH_DISCOVERY = "publish_discovery"
 CONF_UNIQUE_PREFIX = "unique_prefix"
+CONF_SET_OBJECT_ID = "set_object_id"
 
 DOMAIN = "mqtt_discoverystream"
 
@@ -72,6 +73,7 @@ CONFIG_SCHEMA = vol.Schema(
                 vol.Optional(CONF_PUBLISH_ATTRIBUTES, default=False): cv.boolean,
                 vol.Optional(CONF_PUBLISH_TIMESTAMPS, default=False): cv.boolean,
                 vol.Optional(CONF_PUBLISH_DISCOVERY, default=False): cv.boolean,
+                vol.Optional(CONF_SET_OBJECT_ID, default=False): cv.boolean,
                 vol.Optional(CONF_UNIQUE_PREFIX, default="mqtt"): cv.string,
             }
         ),
@@ -91,6 +93,7 @@ async def async_setup(hass, config):
     publish_timestamps = conf.get(CONF_PUBLISH_TIMESTAMPS)
     publish_discovery = conf.get(CONF_PUBLISH_DISCOVERY)
     unique_prefix = conf.get(CONF_UNIQUE_PREFIX)
+    set_object_id = conf.get(CONF_SET_OBJECT_ID)
     if not base_topic.endswith("/"):
         base_topic = f"{base_topic}/"
     if not discovery_topic.endswith("/"):
@@ -202,6 +205,9 @@ async def async_setup(hass, config):
                 "json_attr_t": f"{mybase}attributes",
                 "avty_t": f"{mybase}availability"
             }
+            
+            if set_object_id:
+                config['obj_id'] = f"{unique_prefix}_{ent_id}"
 
             if ("icon" in new_state.attributes):
                 config["ic"]= new_state.attributes["icon"]
@@ -355,6 +361,8 @@ async def async_setup(hass, config):
             entity_parts[0] = "button"
         elif entity_parts[0] == "input_button":
             entity_parts[0] = "button"
+        if unique_prefix:
+            entity_parts[1] = f"{unique_prefix}_{entity_parts[1]}"
         return f"{discovery_topic}{'/'.join(entity_parts)}/config"
 
 
