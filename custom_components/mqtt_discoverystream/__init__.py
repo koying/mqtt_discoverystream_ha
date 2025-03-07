@@ -39,7 +39,7 @@ from homeassistant.helpers.entityfilter import (
     convert_include_exclude_filter,
 )
 from homeassistant.core import Event, EventStateChangedData
-from homeassistant.helper.event import async_track_state_change_event
+from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.json import JSONEncoder
 from homeassistant.setup import async_when_setup
 
