@@ -5,6 +5,14 @@ Besides the functionalities of the hereabove, it also allows to publish and hand
 
 ## Changelog
 
+### 1.5.1
+
+- Bugfix and bump
+
+### 1.5.0
+
+- FIX: Remove deprecated color_mode
+
 ### 1.4
 
 - FIX: MQTT race condition at startup
