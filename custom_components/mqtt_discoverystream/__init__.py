@@ -39,7 +39,7 @@ from homeassistant.helpers.entityfilter import (
     convert_include_exclude_filter,
 )
 from homeassistant.core import Event, EventStateChangedData
-from homeassistant.helper.event import async_track_state_change_event
+from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.json import JSONEncoder
 from homeassistant.setup import async_when_setup
 
@@ -86,7 +86,8 @@ async def async_setup(hass, config):
     publish_filter = convert_include_exclude_filter(conf)
     has_includes = True if conf.get(CONF_INCLUDE) else False
     base_topic = conf.get(CONF_BASE_TOPIC)
-    discovery_topic = conf.get(CONF_DISCOVERY_TOPIC) if conf.get(CONF_DISCOVERY_TOPIC) else conf.get(CONF_BASE_TOPIC)
+    discovery_topic = conf.get(CONF_DISCOVERY_TOPIC) if conf.get(
+        CONF_DISCOVERY_TOPIC) else conf.get(CONF_BASE_TOPIC)
     publish_attributes = conf.get(CONF_PUBLISH_ATTRIBUTES)
     publish_timestamps = conf.get(CONF_PUBLISH_TIMESTAMPS)
     publish_discovery = conf.get(CONF_PUBLISH_DISCOVERY)
@@ -101,7 +102,6 @@ async def async_setup(hass, config):
     dev_reg = device_registry.async_get(hass)
     ent_reg = entity_registry.async_get(hass)
 
-
     async def message_received(msg):
         """Handle new messages on MQTT."""
         explode_topic = msg.topic.split("/")
@@ -111,27 +111,30 @@ async def async_setup(hass, config):
 
         # Only handle service calls for discoveries we published (or intend to publish)
         if (f"{domain}.{entity}" not in hass.data[DOMAIN][discovery_topic]["conf_published"]
-            and not publish_filter(f"{domain}.{entity}")):
+                and not publish_filter(f"{domain}.{entity}")):
             return
 
-        _LOGGER.debug(f"Message received: topic {msg.topic}; payload: {msg.payload}")
+        _LOGGER.debug(
+            f"Message received: topic {msg.topic}; payload: {msg.payload}")
         if element == "set":
             if msg.payload == STATE_ON:
-               await  hass.services.async_call(domain, SERVICE_TURN_ON, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
+                await hass.services.async_call(domain, SERVICE_TURN_ON, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
             elif msg.payload == STATE_OFF:
-               await hass.services.async_call(domain, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
+                await hass.services.async_call(domain, SERVICE_TURN_OFF, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
             elif msg.payload == SERVICE_PRESS:
                 await hass.services.async_call(domain, SERVICE_PRESS, {ATTR_ENTITY_ID: f"{domain}.{entity}"})
             elif domain == "script":
                 await hass.services.async_call(domain, entity)
             else:
-                _LOGGER.error(f'Invalid service for "set" - payload: {msg.payload} for {entity}')
+                _LOGGER.error(
+                    f'Invalid service for "set" - payload: {msg.payload} for {entity}')
         if element == "set_light":
             if domain != "light":
-                _LOGGER.error(f'Invalid domain for "set_light" - payload: {msg.payload} for {entity}')
+                _LOGGER.error(
+                    f'Invalid domain for "set_light" - payload: {msg.payload} for {entity}')
             else:
                 payload_json = json.loads(msg.payload)
-                service_payload =  {
+                service_payload = {
                     ATTR_ENTITY_ID: f"{domain}.{entity}",
                 }
                 if ATTR_TRANSITION in payload_json:
@@ -144,19 +147,22 @@ async def async_setup(hass, config):
                         service_payload[ATTR_COLOR_TEMP] = payload_json[ATTR_COLOR_TEMP]
                     if ATTR_COLOR in payload_json:
                         if ATTR_H in payload_json[ATTR_COLOR]:
-                            service_payload[ATTR_HS_COLOR] = [ payload_json[ATTR_COLOR][ATTR_H], payload_json[ATTR_COLOR][ATTR_S] ]
+                            service_payload[ATTR_HS_COLOR] = [
+                                payload_json[ATTR_COLOR][ATTR_H], payload_json[ATTR_COLOR][ATTR_S]]
                         if ATTR_X in payload_json[ATTR_COLOR]:
-                            service_payload[ATTR_XY_COLOR] = [ payload_json[ATTR_COLOR][ATTR_X], payload_json[ATTR_COLOR][ATTR_Y] ]
+                            service_payload[ATTR_XY_COLOR] = [
+                                payload_json[ATTR_COLOR][ATTR_X], payload_json[ATTR_COLOR][ATTR_Y]]
                         if ATTR_R in payload_json[ATTR_COLOR]:
-                            service_payload[ATTR_RGB_COLOR] = [ payload_json[ATTR_COLOR][ATTR_R], payload_json[ATTR_COLOR][ATTR_G], payload_json[ATTR_COLOR][ATTR_B] ]
+                            service_payload[ATTR_RGB_COLOR] = [payload_json[ATTR_COLOR][ATTR_R],
+                                                               payload_json[ATTR_COLOR][ATTR_G], payload_json[ATTR_COLOR][ATTR_B]]
                     if ATTR_EFFECT in payload_json:
                         service_payload[ATTR_EFFECT] = payload_json[ATTR_EFFECT]
                     await hass.services.async_call(domain, SERVICE_TURN_ON, service_payload)
                 elif payload_json["state"] == "OFF":
                     await hass.services.async_call(domain, SERVICE_TURN_OFF, service_payload)
                 else:
-                    _LOGGER.error(f'Invalid state for "set_light" - payload: {msg.payload} for {entity}')
-
+                    _LOGGER.error(
+                        f'Invalid state for "set_light" - payload: {msg.payload} for {entity}')
 
     async def mqtt_publish(topic, payload, qos=None, retain=None):
         if asyncio.iscoroutinefunction(mqtt.async_publish):
@@ -204,7 +210,7 @@ async def async_setup(hass, config):
             }
 
             if ("icon" in new_state.attributes):
-                config["ic"]= new_state.attributes["icon"]
+                config["ic"] = new_state.attributes["icon"]
 
             if ("device_class" in new_state.attributes):
                 config["dev_cla"] = new_state.attributes["device_class"]
@@ -279,7 +285,8 @@ async def async_setup(hass, config):
                         if device.sw_version:
                             config["dev"]["sw"] = device.sw_version
                         if device.identifiers:
-                            config["dev"]["ids"] = [ id[1] for id in device.identifiers ]
+                            config["dev"]["ids"] = [id[1]
+                                                    for id in device.identifiers]
                         if device.connections:
                             config["dev"]["cns"] = device.connections
 
@@ -294,12 +301,14 @@ async def async_setup(hass, config):
                     else:
                         config["name"] = None
                 if not entity_exists:
-                    config["name"] = new_state.attributes.get("friendly_name", ent_id.replace("_", " ") .title())
+                    config["name"] = new_state.attributes.get(
+                        "friendly_name", ent_id.replace("_", " ") .title())
 
                 encoded = json.dumps(config, cls=JSONEncoder)
                 entity_disc_topic = generate_discovery_topic(entity_id)
                 await mqtt_publish(entity_disc_topic, encoded, 1, True)
-                hass.data[DOMAIN][discovery_topic]["conf_published"].append(entity_id)
+                hass.data[DOMAIN][discovery_topic]["conf_published"].append(
+                    entity_id)
 
         if publish_discovery:
             if new_state.state in (STATE_UNAVAILABLE, STATE_UNKNOWN, None):
@@ -357,7 +366,6 @@ async def async_setup(hass, config):
             entity_parts[0] = "button"
         return f"{discovery_topic}{'/'.join(entity_parts)}/config"
 
-
     async def my_async_subscribe_mqtt(hass, _):
         await mqtt.async_subscribe(hass, f"{base_topic}switch/+/set", message_received)
         await mqtt.async_subscribe(hass, f"{base_topic}light/+/set_light", message_received)
@@ -376,4 +384,3 @@ async def async_setup(hass, config):
 
     async_track_state_change_event(hass, MATCH_ALL, _state_publisher)
     return True
-
