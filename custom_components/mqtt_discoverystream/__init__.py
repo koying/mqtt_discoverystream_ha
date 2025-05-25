@@ -7,7 +7,7 @@ import voluptuous as vol
 
 from homeassistant.components import mqtt
 from homeassistant.const import (
-    MATCH_ALL,
+    EVENT_STATE_CHANGED,
     ATTR_ENTITY_ID,
     SERVICE_TURN_OFF,
     SERVICE_TURN_ON,
@@ -374,6 +374,6 @@ async def async_setup(hass, config):
     if publish_discovery:
         async_when_setup(hass, "mqtt", my_async_subscribe_mqtt)
 
-    async_track_state_change_event(hass, MATCH_ALL, _state_publisher)
+    hass.bus.async_listen(EVENT_STATE_CHANGED, _state_publisher)
     return True
 

@@ -5,6 +5,10 @@ Besides the functionalities of the hereabove, it also allows to publish and hand
 
 ## Changelog
 
+### 1.5.2
+
+- Fix event listener
+
 ### 1.5.1
 
 - Bugfix and bump
