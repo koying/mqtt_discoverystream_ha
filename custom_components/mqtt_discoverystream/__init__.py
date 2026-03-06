@@ -20,16 +20,14 @@ from homeassistant.const import (
 from homeassistant.components.button import SERVICE_PRESS
 from homeassistant.components.light import (
     ATTR_BRIGHTNESS,
-    ATTR_COLOR_TEMP,
+    ATTR_COLOR_TEMP_KELVIN,
     ATTR_RGB_COLOR,
     ATTR_XY_COLOR,
     ATTR_HS_COLOR,
     ATTR_TRANSITION,
     ATTR_EFFECT,
-    SUPPORT_BRIGHTNESS,
-    SUPPORT_COLOR,
-    SUPPORT_COLOR_TEMP,
-    SUPPORT_EFFECT,
+    ColorMode,
+    LightEntityFeature,
 )
 from homeassistant.helpers import device_registry, entity_registry
 import homeassistant.helpers.config_validation as cv
@@ -39,7 +37,6 @@ from homeassistant.helpers.entityfilter import (
     convert_include_exclude_filter,
 )
 from homeassistant.core import Event, EventStateChangedData
-from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.json import JSONEncoder
 from homeassistant.setup import async_when_setup
 
@@ -140,8 +137,8 @@ async def async_setup(hass, config):
                 if payload_json["state"] == "ON":
                     if ATTR_BRIGHTNESS in payload_json:
                         service_payload[ATTR_BRIGHTNESS] = payload_json[ATTR_BRIGHTNESS]
-                    if ATTR_COLOR_TEMP in payload_json:
-                        service_payload[ATTR_COLOR_TEMP] = payload_json[ATTR_COLOR_TEMP]
+                    if ATTR_COLOR_TEMP_KELVIN in payload_json:
+                        service_payload[ATTR_COLOR_TEMP_KELVIN] = payload_json[ATTR_COLOR_TEMP_KELVIN]
                     if ATTR_COLOR in payload_json:
                         if ATTR_H in payload_json[ATTR_COLOR]:
                             service_payload[ATTR_HS_COLOR] = [ payload_json[ATTR_COLOR][ATTR_H], payload_json[ATTR_COLOR][ATTR_S] ]
@@ -237,9 +234,7 @@ async def async_setup(hass, config):
                 config["schema"] = "json"
 
                 supported_features = get_supported_features(hass, entity_id)
-                if (supported_features & SUPPORT_BRIGHTNESS) or ("brightness" in new_state.attributes):
-                    config["brightness"] = True
-                if supported_features & SUPPORT_EFFECT:
+                if supported_features & LightEntityFeature.EFFECT:
                     config["effect"] = True
                 if "supported_color_modes" in new_state.attributes:
                     config["supported_color_modes"] = new_state.attributes["supported_color_modes"]
@@ -312,8 +307,8 @@ async def async_setup(hass, config):
                 }
                 if ("brightness" in new_state.attributes):
                     payload["brightness"] = new_state.attributes["brightness"]
-                if ("color_temp" in new_state.attributes):
-                    payload["color_temp"] = new_state.attributes["color_temp"]
+                if ("color_temp_kelvin" in new_state.attributes):
+                    payload["color_temp_kelvin"] = new_state.attributes["color_temp_kelvin"]
                 if ("effect" in new_state.attributes):
                     payload["effect"] = new_state.attributes["effect"]
 
